@@ -1,20 +1,50 @@
 import React, { useState } from 'react';
-import './Login.css';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+import './Login.css'; // Your styles
 
 const LoginForm = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Login attempt with:', { username, password });
+    try {
+      const res = await axios.post('http://localhost:5000/api/users/login', {
+        email,
+        password,
+      });
+
+      console.log('Login success:', res.data);
+
+   
+      // Navigate according to role
+      const userRole = res.data.user.role;
+
+      console.log('User role:', userRole);
+
+      if (userRole === 'admin') {
+        navigate('/admin');
+      } else if (userRole === 'student') {
+        navigate('/student');
+      } else if (userRole === 'lecturer') {
+        navigate('/lecturer');
+      } else {
+        alert('Unknown role. Please contact admin.');
+      }
+
+    } catch (error) {
+      console.error('Login failed:', error.response?.data?.message || error.message);
+      alert('Login failed: ' + (error.response?.data?.message || 'Server Error'));
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleForgotPassword = () => {
@@ -23,13 +53,12 @@ const LoginForm = () => {
 
   return (
     <div className="login-container">
-      {/* Animated background elements */}
       <div className="bg-bubbles">
         {[...Array(10)].map((_, i) => (
           <li key={i}></li>
         ))}
       </div>
-      
+
       <div className="login-box">
         <h1>Welcome Back</h1>
         <div className="login-form">
@@ -37,24 +66,24 @@ const LoginForm = () => {
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <input
-                type="text"
-                placeholder="Username or Email"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
-              <i className="fas fa-user"></i>
+              <i className="fas fa-envelope"></i>
             </div>
             <div className="input-group">
               <input
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
               <i className="fas fa-lock"></i>
-              <span 
+              <span
                 className="password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
               >
@@ -69,15 +98,16 @@ const LoginForm = () => {
               <label className="remember-me">
                 <input type="checkbox" /> Remember me
               </label>
-              <span 
+              <span
                 className="forgot-password"
                 onClick={handleForgotPassword}
               >
                 Forgot password?
               </span>
             </div>
-            <button 
-              type="submit" 
+
+            <button
+              type="submit"
               className={`login-btn ${isLoading ? 'loading' : ''}`}
               disabled={isLoading}
             >
@@ -90,6 +120,7 @@ const LoginForm = () => {
                 'Login'
               )}
             </button>
+
             <div className="social-login">
               <p>Or login with</p>
               <div className="social-icons">
@@ -102,7 +133,8 @@ const LoginForm = () => {
         </div>
         <div className="footer-login">
           <p>Copyright © 2025 Ministry of Education (Higher Education). All Rights Reserved.
-          Designed and Developed by IT Department</p>
+            Designed and Developed by IT Department
+          </p>
         </div>
       </div>
     </div>

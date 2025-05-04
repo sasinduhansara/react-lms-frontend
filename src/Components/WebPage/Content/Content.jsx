@@ -11,7 +11,7 @@ const Hero = () => {
   };
 
   return (
-    <div className="hero-section">
+    <div id="home-section" className="hero-section">
     
      <MainTabs />
     

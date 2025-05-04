@@ -28,7 +28,7 @@ const courseData = [
 
 export default function Courses() {
   return (
-    <div className="courses-wrapper px-5 py-4">
+    <div id="courses-section"className="courses-wrapper px-5 py-4">
       <h2 className="section-title mb-4 fw-bold">Active Courses</h2>
       <div className="row gy-4">
         {courseData.map((course) => (

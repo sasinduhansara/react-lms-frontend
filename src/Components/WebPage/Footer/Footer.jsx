@@ -4,7 +4,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 
 export default function Footer() {
   return (
-    <footer className="footer">
+    <footer id="about-section" className="footer">
       <div className="footer-container">
         <div className="footer-section">
           <h2>SLIATE</h2>

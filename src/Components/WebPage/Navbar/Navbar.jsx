@@ -22,7 +22,7 @@ const Navbar = () => {
       <div className="navbar-right">
         <div className="navbar-location">
           <FaMapMarkerAlt />
-          <span> Rajarata University of Sri Lanka, Mihintale - 50300, Sri Lanka</span>
+          <span> No.22/1, Wilgoda Road, Kurunagala </span>
         </div>
         <div className="vertical-line"></div>
         <div className="navbar-icons">

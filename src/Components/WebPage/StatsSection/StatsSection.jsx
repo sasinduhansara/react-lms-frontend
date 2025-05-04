@@ -4,7 +4,7 @@ import "./StatsSection.css";
 
 const StatsSection = () => {
   const stats = [
-    { value: "450", label: "LEARNERS" },
+    { value: "45", label: "LEARNERS" },
     { value: "660", label: "GRADUATES" },
     { value: "35", label: "COUNTRIES RESEARCHED" },
     { value: "170", label: "COURSES PUBLISHED" },
