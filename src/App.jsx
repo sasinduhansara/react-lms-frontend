@@ -2,10 +2,14 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import WebPage from "./Pages/WebPage";
 import LoginPage from "./Pages/LoginPage";
-import Student from "./Pages/Student";
-import Lecturer from "./Pages/Lecturer";
-import Admin from "./Pages/Admin";
-
+import Student from "./Pages/StudentPages/StudentHome";
+import Lecturer from "./Pages/LecturerPages/LecturerHome";
+import Admin from "./Pages/AdminPages/AdminHome";
+import AdminUsers from './Pages/AdminPages/AdminUsers';
+import AdminCourses from './Pages/AdminPages/AdminCourses';
+import AdminNotification from './Pages/AdminPages/AdminNotification';
+import AdminDashboard from './Pages/AdminPages/AdminDashboard';
+import AdminMarks from './Pages/AdminPages/AdminMarks';
 
 function App() {
   return (
@@ -16,6 +20,11 @@ function App() {
         <Route path="/lecturer" element={<Lecturer />} />
         <Route path="/student" element={<Student />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/courses" element={<AdminCourses />} />
+        <Route path="/admin/notification" element={<AdminNotification />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/marks" element={<AdminMarks />} />
       
       </Routes>
 

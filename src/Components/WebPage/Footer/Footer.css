@@ -3,7 +3,9 @@
     background-color: #3f3f3f;
     color: hsl(0, 0%, 100%);
     padding: 50px 20px;
-    font-family: 'Roboto', sans-serif; 
+    font-family: 'Roboto', sans-serif;
+    bottom: 0;
+    width: 100%;
    
     
   }

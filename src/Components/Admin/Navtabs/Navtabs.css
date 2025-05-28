@@ -3,14 +3,15 @@
 /* Wrapper padding and border */
 .nav-wrapper {
     background-color: #f8f9fa;
-    padding: 15px 0;
+    padding: 10px 0;
     border-bottom: 0px solid #dee2e6;
+    margin-top: -12px;
   }
   
   /* Search section styling */
   .search-section {
     max-width: 400px;
-    gap: 15px; /* 🟢 Add gap between search input and button */
+    gap: 15px; /* Add gap between search input and button */
     display: flex;
     align-items: center;
   }
@@ -41,7 +42,7 @@
   .custom-search-btn {
     border-radius: 20px;
     border-color: #36517e;
-    padding: 10px 7px;
+    padding: 12px 12px;
     font-weight: bold;
     font-size: 15px;
     background-color: #36517e;
@@ -50,6 +51,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-top: 2px;
   }
   
   
@@ -76,5 +78,13 @@
   .nav-scrollable {
     overflow-x: auto;
     white-space: nowrap;
+  }
+
+  .search-icon {
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+   
   }
   
