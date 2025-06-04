@@ -2,12 +2,10 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import Nav from 'react-bootstrap/Nav';
 import Container from 'react-bootstrap/Container';
-import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Navtabs.css';
 //import axios from 'axios';
-import { BsSearch } from 'react-icons/bs';
+
 
 export default function Navtabs() {
   const navigate = useNavigate();
@@ -34,7 +32,7 @@ export default function Navtabs() {
         navigate('/admin/notification');
         break;
       case'setting':
-        navigate('/admin');
+        navigate('/admin/setting');
         break;
 
       // Add more cases as needed
@@ -46,23 +44,10 @@ export default function Navtabs() {
   return (
     <div className="nav-wrapper">
       <Container fluid className="px-5 d-flex justify-content-between align-items-center flex-wrap">
-        {/* Search bar section */}
-        <Form className="d-flex search-section mx-auto mx-md-0 mb-2 mb-md-0">
-          <Form.Control
-            type="search"
-            placeholder="Search..."
-            className="custom-search-input"
-            aria-label="Search"
-          />
-          <Button variant="primary" className="custom-search-btn">
-            <BsSearch className="search-icon" />
-          </Button>
-        </Form>
-
+      
         {/* Nav tabs section */}
         <Nav
           variant="underline"
-          defaultActiveKey="home"
           className="nav-scrollable ms-auto mb-2 mb-md-0 custom-nav"
           onSelect={handleNavigation}
         >

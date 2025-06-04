@@ -10,6 +10,7 @@ import AdminCourses from './Pages/AdminPages/AdminCourses';
 import AdminNotification from './Pages/AdminPages/AdminNotification';
 import AdminDashboard from './Pages/AdminPages/AdminDashboard';
 import AdminMarks from './Pages/AdminPages/AdminMarks';
+import AdminSetting from './Pages/AdminPages/AdminSetting';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/admin/notification" element={<AdminNotification />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/marks" element={<AdminMarks />} />
+        <Route path="/admin/setting" element={<AdminSetting />} />
       
       </Routes>
 

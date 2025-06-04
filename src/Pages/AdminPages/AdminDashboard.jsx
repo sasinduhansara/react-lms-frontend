@@ -10,8 +10,8 @@ const AdminDashboard = () => {
   // State for statistics cards
   const [stats, setStats] = useState({
     totalAdmins: 5,
-    totalStudents: 342,
-    totalLecturers: 28,
+    totalStudents: 3,
+    totalLecturers: 2,
     totalDepartments: 8
   });
 

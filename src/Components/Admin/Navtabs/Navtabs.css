@@ -2,89 +2,35 @@
 
 /* Wrapper padding and border */
 .nav-wrapper {
-    background-color: #f8f9fa;
-    padding: 10px 0;
-    border-bottom: 0px solid #dee2e6;
-    margin-top: -12px;
-  }
-  
-  /* Search section styling */
-  .search-section {
-    max-width: 400px;
-    gap: 15px; /* Add gap between search input and button */
-    display: flex;
-    align-items: center;
-  }
-  
-  /* Search input */
-  .custom-search-input {
-    flex: 1;
-    border: 2px solid #36517e;
-    border-radius: 20px;
-    padding: 5px 50px;
-    font-size: 15px;
-    outline: none;
-    transition: border-color 0.3s ease;
-    
-  }
-  .custom-search-input::placeholder {
-    padding-left:  px; /* or whatever value you prefer */
-    color: #999; /* Placeholder color */
-  }
-  
-  /* Input focus style */
-  .custom-search-input:focus {
-    border-color: #36517e;
-    box-shadow: none;
-  }
-  
-  /* Search button */
-  .custom-search-btn {
-    border-radius: 20px;
-    border-color: #36517e;
-    padding: 12px 12px;
-    font-weight: bold;
-    font-size: 15px;
-    background-color: #36517e;
-    border: none;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 2px;
-  }
-  
-  
-  /* Nav customization */
-  .custom-nav .nav-link {
-    font-size: 16px;
-    font-weight: 500;
-    color: #36517e !important;
-    margin-left: 10px;
-    transition: color 0.3s ease;
-  }
-  
-  .custom-nav .nav-link:hover {
-    color: #FFA629!important;
-  }
-  
-  .custom-nav .nav-link.active {
-    color: #36517e !important;
-    border-bottom: 2px solid #FFA629;
-    font-weight: 600;
-  }
-  
-  /* Responsive scrollable nav if needed */
-  .nav-scrollable {
-    overflow-x: auto;
-    white-space: nowrap;
-  }
+  background-color: #f8f9fa;
+  padding: 10px 0;
+  border-bottom: 0px solid #dee2e6;
+  margin-top: -12px;
+}
 
-  .search-icon {
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-   
-  }
-  
+/* Nav customization */
+.custom-nav .nav-link {
+  font-size: 16px;
+  font-weight: 500;
+  color: #36517e !important;
+  margin-left: 10px;
+  transition: color 0.3s ease, border-color 0.3s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.custom-nav .nav-link:hover {
+  color: #FFA629 !important;
+  border-bottom: 2px solid #FFA629;
+}
+
+.custom-nav .nav-link.active {
+  color: #36517e !important;
+  border-bottom: 2px solid #FFA629;
+  font-weight: 600;
+}
+
+/* Responsive scrollable nav if needed */
+.nav-scrollable {
+  overflow-x: auto;
+  white-space: nowrap;
+}
