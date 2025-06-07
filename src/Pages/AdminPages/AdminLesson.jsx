@@ -22,7 +22,6 @@ export default function AdminLesson() {
     department: "",
     subject: "",
     totalParts: 1,
-    type: "video", // video or pdf
   });
 
   // Part upload states
@@ -105,18 +104,58 @@ export default function AdminLesson() {
     }
   };
 
+  // FIXED: Fetch lessons after departments and subjects are loaded
   const fetchLessons = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_URL}/lessons`, getAuthHeader());
 
-      // Enhance lessons with subject info
-      const enhancedLessons = (response.data || []).map((lesson) => {
-        const subject = subjects.find((s) => s._id === lesson.subject);
-        const department = departments.find((d) => d._id === lesson.department);
+      // FIXED: Handle different response structures
+      let lessonsData = [];
+
+      if (response.data.success) {
+        // If response has success property, data is in response.data.data
+        lessonsData = response.data.data || [];
+      } else if (Array.isArray(response.data)) {
+        // If response.data is directly an array
+        lessonsData = response.data;
+      } else {
+        // If response.data is an object, try to find the array
+        lessonsData = response.data.lessons || response.data.data || [];
+      }
+
+      console.log("Lessons data:", lessonsData); // Debug log
+      console.log("Departments for mapping:", departments); // Debug log
+      console.log("Subjects for mapping:", subjects); // Debug log
+
+      // FIXED: Enhance lessons with subject info only if departments and subjects are loaded
+      const enhancedLessons = lessonsData.map((lesson) => {
+        // FIXED: Handle both string and object IDs for department
+        let departmentId = lesson.department;
+        if (typeof lesson.department === "object" && lesson.department._id) {
+          departmentId = lesson.department._id;
+        }
+
+        // FIXED: Handle both string and object IDs for subject
+        let subjectId = lesson.subject;
+        if (typeof lesson.subject === "object" && lesson.subject._id) {
+          subjectId = lesson.subject._id;
+        }
+
+        const subject = subjects.find((s) => s._id === subjectId);
+        const department = departments.find((d) => d._id === departmentId);
+
+        console.log("Mapping lesson:", lesson.title);
+        console.log("Looking for department ID:", departmentId);
+        console.log("Found department:", department);
+        console.log("Looking for subject ID:", subjectId);
+        console.log("Found subject:", subject);
 
         return {
           ...lesson,
+          // Store original IDs for filtering
+          departmentId: departmentId,
+          subjectId: subjectId,
           subjectName: subject
             ? `${subject.subjectCode} - ${subject.subjectName}`
             : "Unknown Subject",
@@ -128,21 +167,44 @@ export default function AdminLesson() {
     } catch (err) {
       console.error("Failed to fetch lessons:", err);
       setError("Failed to load lessons");
+      setLessons([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
   };
 
+  // FIXED: Fetch lesson parts with proper error handling
   const fetchLessonParts = async (lessonId) => {
     try {
+      setLoading(true);
       const response = await axios.get(
         `${API_URL}/lesson-parts/${lessonId}`,
         getAuthHeader()
       );
-      setLessonParts(response.data || []);
+
+      console.log("Lesson parts response:", response.data); // Debug log
+
+      // FIXED: Handle different response structures
+      let partsData = [];
+
+      if (response.data.success) {
+        // If response has success property, data is in response.data.data
+        partsData = response.data.data || [];
+      } else if (Array.isArray(response.data)) {
+        // If response.data is directly an array
+        partsData = response.data;
+      } else {
+        // If response.data is an object, try to find the array
+        partsData = response.data.parts || response.data.data || [];
+      }
+
+      setLessonParts(partsData);
     } catch (err) {
       console.error("Failed to fetch lesson parts:", err);
       setError("Failed to load lesson parts");
+      setLessonParts([]); // FIXED: Set empty array on error
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -154,12 +216,38 @@ export default function AdminLesson() {
     initializeData();
   }, []);
 
-  // Fetch lessons when subjects are loaded
+  // FIXED: Fetch lessons only after both departments and subjects are loaded
   useEffect(() => {
-    if (subjects.length > 0) {
+    if (departments.length > 0 && subjects.length > 0) {
       fetchLessons();
     }
-  }, [subjects, departments]);
+  }, [departments, subjects]);
+
+  // FIXED: Get filtered subjects based on selected department - CORRECTED COMPARISON
+  const getFilteredSubjectsForForm = () => {
+    if (!lessonForm.department) return [];
+    console.log("Selected department:", lessonForm.department);
+    console.log("All subjects:", subjects);
+
+    const filtered = subjects.filter((subject) => {
+      // FIXED: Compare with subject.department._id instead of subject.department
+      const subjectDeptId = subject.department?._id || subject.department;
+      console.log("Comparing:", subjectDeptId, "with", lessonForm.department);
+      return subjectDeptId === lessonForm.department;
+    });
+
+    console.log("Filtered subjects for form:", filtered);
+    return filtered;
+  };
+
+  // FIXED: Get filtered subjects for filter dropdown - CORRECTED COMPARISON
+  const getFilteredSubjectsForFilter = () => {
+    if (!filters.department) return subjects;
+    return subjects.filter((subject) => {
+      const subjectDeptId = subject.department?._id || subject.department;
+      return subjectDeptId === filters.department;
+    });
+  };
 
   // Create lesson
   const handleCreateLesson = async (e) => {
@@ -194,7 +282,6 @@ export default function AdminLesson() {
         department: "",
         subject: "",
         totalParts: 1,
-        type: "video",
       });
       setShowLessonModal(false);
       await fetchLessons();
@@ -324,13 +411,19 @@ export default function AdminLesson() {
     setPartForm({ ...partForm, questions: newQuestions });
   };
 
-  // Filter lessons
+  // FIXED: Filter lessons with proper ID comparison
   const getFilteredLessons = () => {
     return lessons.filter((lesson) => {
+      console.log("Filtering lesson:", lesson.title);
+      console.log("Lesson department ID:", lesson.departmentId);
+      console.log("Filter department:", filters.department);
+      console.log("Lesson subject ID:", lesson.subjectId);
+      console.log("Filter subject:", filters.subject);
+
       const matchesDepartment =
-        !filters.department || lesson.department === filters.department;
+        !filters.department || lesson.departmentId === filters.department;
       const matchesSubject =
-        !filters.subject || lesson.subject === filters.subject;
+        !filters.subject || lesson.subjectId === filters.subject;
       const matchesSearch =
         !filters.searchQuery ||
         lesson.title
@@ -340,23 +433,22 @@ export default function AdminLesson() {
           .toLowerCase()
           .includes(filters.searchQuery.toLowerCase());
 
+      console.log("Matches department:", matchesDepartment);
+      console.log("Matches subject:", matchesSubject);
+      console.log("Matches search:", matchesSearch);
+
       return matchesDepartment && matchesSubject && matchesSearch;
     });
   };
 
-  // Handle file change
+  // UPDATED: Handle file change - Accept any file type
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // File size validation
-      const maxSize =
-        lessonForm.type === "video" ? 500 * 1024 * 1024 : 50 * 1024 * 1024; // 500MB for video, 50MB for PDF
+      // UPDATED: Increased file size limit to 100MB for all file types
+      const maxSize = 100 * 1024 * 1024; // 100MB for all files
       if (file.size > maxSize) {
-        setError(
-          `File size exceeds ${
-            lessonForm.type === "video" ? "500MB" : "50MB"
-          } limit`
-        );
+        setError("File size exceeds 100MB limit");
         e.target.value = "";
         return;
       }
@@ -392,6 +484,21 @@ export default function AdminLesson() {
     }
   };
 
+  // UPDATED: Get file type display
+  const getFileTypeDisplay = (fileType) => {
+    if (!fileType) return "📁 File";
+
+    const type = fileType.toLowerCase();
+    if (["mp4", "mov", "avi", "mkv", "webm"].includes(type)) return "🎬 Video";
+    if (["pdf"].includes(type)) return "📄 PDF";
+    if (["jpg", "jpeg", "png", "gif", "webp"].includes(type)) return "🖼️ Image";
+    if (["doc", "docx"].includes(type)) return "📝 Document";
+    if (["ppt", "pptx"].includes(type)) return "📊 Presentation";
+    if (["xls", "xlsx"].includes(type)) return "📈 Spreadsheet";
+    if (["zip", "rar", "7z"].includes(type)) return "🗜️ Archive";
+    return "📁 File";
+  };
+
   return (
     <div className="admin-lesson-container">
       <div className="lesson-header">
@@ -409,19 +516,20 @@ export default function AdminLesson() {
       {error && <div className="error-message">{error}</div>}
       {success && <div className="success-message">{success}</div>}
 
-      {/* Filters */}
+      {/* FIXED: Filters with proper subject filtering */}
       <div className="lesson-filters">
         <div className="filter-group">
           <label>Department:</label>
           <select
             value={filters.department}
-            onChange={(e) =>
+            onChange={(e) => {
+              console.log("Department filter changed to:", e.target.value);
               setFilters({
                 ...filters,
                 department: e.target.value,
-                subject: "",
-              })
-            }
+                subject: "", // Reset subject when department changes
+              });
+            }}
           >
             <option value="">All Departments</option>
             {departments.map((dept) => (
@@ -436,22 +544,18 @@ export default function AdminLesson() {
           <label>Subject:</label>
           <select
             value={filters.subject}
-            onChange={(e) =>
-              setFilters({ ...filters, subject: e.target.value })
-            }
+            onChange={(e) => {
+              console.log("Subject filter changed to:", e.target.value);
+              setFilters({ ...filters, subject: e.target.value });
+            }}
             disabled={!filters.department}
           >
             <option value="">All Subjects</option>
-            {subjects
-              .filter(
-                (subj) =>
-                  !filters.department || subj.department === filters.department
-              )
-              .map((subj) => (
-                <option key={subj._id} value={subj._id}>
-                  {subj.subjectCode} - {subj.subjectName}
-                </option>
-              ))}
+            {getFilteredSubjectsForFilter().map((subj) => (
+              <option key={subj._id} value={subj._id}>
+                {subj.subjectCode} - {subj.subjectName}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -474,7 +578,6 @@ export default function AdminLesson() {
           <thead>
             <tr>
               <th>Title</th>
-              <th>Type</th>
               <th>Department</th>
               <th>Subject</th>
               <th>Progress</th>
@@ -485,13 +588,13 @@ export default function AdminLesson() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="7" className="loading-cell">
+                <td colSpan="6" className="loading-cell">
                   Loading...
                 </td>
               </tr>
             ) : getFilteredLessons().length === 0 ? (
               <tr>
-                <td colSpan="7" className="empty-cell">
+                <td colSpan="6" className="empty-cell">
                   No lessons found
                 </td>
               </tr>
@@ -503,11 +606,6 @@ export default function AdminLesson() {
                     {lesson.description && (
                       <div className="title-desc">{lesson.description}</div>
                     )}
-                  </td>
-                  <td>
-                    <span className={`type-badge ${lesson.type}`}>
-                      {lesson.type === "video" ? "🎬 Video" : "📄 PDF"}
-                    </span>
                   </td>
                   <td>{lesson.departmentName}</td>
                   <td>{lesson.subjectName}</td>
@@ -632,10 +730,11 @@ export default function AdminLesson() {
                   <select
                     value={lessonForm.department}
                     onChange={(e) => {
+                      console.log("Department changed to:", e.target.value);
                       setLessonForm({
                         ...lessonForm,
                         department: e.target.value,
-                        subject: "",
+                        subject: "", // Reset subject when department changes
                       });
                     }}
                     required
@@ -653,56 +752,38 @@ export default function AdminLesson() {
                   <label>Subject *</label>
                   <select
                     value={lessonForm.subject}
-                    onChange={(e) =>
-                      setLessonForm({ ...lessonForm, subject: e.target.value })
-                    }
+                    onChange={(e) => {
+                      console.log("Subject changed to:", e.target.value);
+                      setLessonForm({ ...lessonForm, subject: e.target.value });
+                    }}
                     disabled={!lessonForm.department}
                     required
                   >
                     <option value="">Select Subject</option>
-                    {subjects
-                      .filter(
-                        (subj) => subj.department === lessonForm.department
-                      )
-                      .map((subj) => (
-                        <option key={subj._id} value={subj._id}>
-                          {subj.subjectCode} - {subj.subjectName}
-                        </option>
-                      ))}
+                    {getFilteredSubjectsForForm().map((subj) => (
+                      <option key={subj._id} value={subj._id}>
+                        {subj.subjectCode} - {subj.subjectName}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Lesson Type *</label>
-                  <select
-                    value={lessonForm.type}
-                    onChange={(e) =>
-                      setLessonForm({ ...lessonForm, type: e.target.value })
-                    }
-                  >
-                    <option value="video">🎬 Video Lesson</option>
-                    <option value="pdf">📄 PDF Lesson</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Total Parts *</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="20"
-                    value={lessonForm.totalParts}
-                    onChange={(e) =>
-                      setLessonForm({
-                        ...lessonForm,
-                        totalParts: parseInt(e.target.value),
-                      })
-                    }
-                    required
-                  />
-                </div>
+              <div className="form-group">
+                <label>Total Parts *</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={lessonForm.totalParts}
+                  onChange={(e) =>
+                    setLessonForm({
+                      ...lessonForm,
+                      totalParts: parseInt(e.target.value),
+                    })
+                  }
+                  required
+                />
               </div>
 
               <div className="modal-actions">
@@ -756,20 +837,26 @@ export default function AdminLesson() {
 
               <div className="form-group">
                 <label>Upload File *</label>
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  accept={
-                    lessonForm.type === "video" ? ".mp4,.mov,.avi,.mkv" : ".pdf"
-                  }
-                  required
-                />
-                <small>
-                  Supported formats:{" "}
-                  {lessonForm.type === "video"
-                    ? "MP4, MOV, AVI, MKV (Max 500MB)"
-                    : "PDF (Max 50MB)"}
-                </small>
+                <input type="file" onChange={handleFileChange} required />
+                <small>Supported formats: All file types (Max 100MB)</small>
+                {partForm.file && (
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      padding: "10px",
+                      backgroundColor: "#f5f5f5",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    <strong>Selected file:</strong> {partForm.file.name}
+                    <br />
+                    <strong>Type:</strong>{" "}
+                    {getFileTypeDisplay(partForm.fileType)}
+                    <br />
+                    <strong>Size:</strong>{" "}
+                    {(partForm.file.size / (1024 * 1024)).toFixed(2)} MB
+                  </div>
+                )}
               </div>
 
               {/* Questions Section */}
@@ -881,7 +968,7 @@ export default function AdminLesson() {
         </div>
       )}
 
-      {/* Parts List Modal */}
+      {/* FIXED: Parts List Modal with proper array handling */}
       {showPartsListModal && selectedLesson && (
         <div className="modal-overlay">
           <div className="modal-content large-modal">
@@ -896,11 +983,12 @@ export default function AdminLesson() {
             </div>
 
             <div className="parts-list">
-              {lessonParts.length === 0 ? (
+              {/* FIXED: Check if lessonParts is array and has length */}
+              {!Array.isArray(lessonParts) || lessonParts.length === 0 ? (
                 <div className="empty-parts">No parts uploaded yet</div>
               ) : (
                 lessonParts.map((part, index) => (
-                  <div key={part._id} className="part-item">
+                  <div key={part._id || index} className="part-item">
                     <div className="part-header">
                       <h4>
                         Part {part.partNumber}: {part.title}
@@ -914,11 +1002,13 @@ export default function AdminLesson() {
                       </span>
                     </div>
                     <div className="part-details">
-                      <p>File Type: {part.fileType?.toUpperCase()}</p>
+                      <p>File Type: {getFileTypeDisplay(part.fileType)}</p>
                       <p>Questions: {part.questions?.length || 0}</p>
                       <p>
                         Uploaded:{" "}
-                        {new Date(part.createdAt).toLocaleDateString()}
+                        {part.createdAt
+                          ? new Date(part.createdAt).toLocaleDateString()
+                          : "N/A"}
                       </p>
                     </div>
                   </div>

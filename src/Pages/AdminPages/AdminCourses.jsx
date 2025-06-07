@@ -500,19 +500,32 @@ export default function AdminCourses() {
 
   const getFilteredMaterials = () => {
     return materials.filter((material) => {
-      const subject = subjects.find((s) => s._id === material.subject);
+      // FIXED: Handle both string and object format for material.subject
+      let materialSubjectId;
+      if (typeof material.subject === "string") {
+        materialSubjectId = material.subject;
+      } else if (material.subject && material.subject._id) {
+        materialSubjectId = material.subject._id;
+      } else {
+        materialSubjectId = null;
+      }
+
+      // Find the subject using the extracted ID
+      const subject = subjects.find((s) => s._id === materialSubjectId);
 
       // Department filter
       const matchesDepartment =
         !materialFilter.department ||
+        materialFilter.department === "" ||
         materialFilter.department === "all" ||
         (subject && subject.departmentId === materialFilter.department);
 
       // Subject filter
       const matchesSubject =
         !materialFilter.subject ||
+        materialFilter.subject === "" ||
         materialFilter.subject === "all" ||
-        material.subject === materialFilter.subject;
+        materialSubjectId === materialFilter.subject;
 
       // Search filter
       const matchesSearch =
