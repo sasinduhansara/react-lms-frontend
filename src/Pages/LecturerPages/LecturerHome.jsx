@@ -1,9 +1,20 @@
-import React from 'react';
+import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Navbar from "../../Components/WebPage/Navbar/Navbar";
+import Navtabs from "../../Components/Lecturer/Navtabs/Navtabs";
+import Carousel from "../../Components/Admin/Carousel/Carousel";
 
-export default function Lecturer() {
+import Footer from "../../Components/WebPage/Footer/Footer";
+
+export default function WebPage() {
   return (
     <div>
-      <h1>Lecturer Dashboard</h1>
+      <Navbar />
+      <Navtabs />
+
+      <Carousel />
+
+      <Footer />
     </div>
   );
 }

@@ -185,6 +185,7 @@ const AdminDashboard = () => {
       setLoading(true);
       setError("");
       const response = await axios.get(`${API_URL}/users`, getAuthHeader());
+      console.log("Users response:", response.data);
       setUsers(response.data || []);
     } catch (err) {
       console.error("Failed to fetch users:", err);
@@ -195,7 +196,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // Fetch departments from backend
+  // FIXED: Fetch departments from backend
   const fetchDepartments = async () => {
     try {
       setLoading(true);
@@ -204,6 +205,7 @@ const AdminDashboard = () => {
         `${API_URL}/departments`,
         getAuthHeader()
       );
+      console.log("Departments response:", response.data);
       setDepartments(response.data || []);
     } catch (err) {
       console.error("Failed to fetch departments:", err);
@@ -270,7 +272,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // Fetch statistics from backend
+  // FIXED: Fetch statistics from backend with proper department count
   const fetchStats = async () => {
     try {
       const response = await axios.get(
@@ -283,11 +285,13 @@ const AdminDashboard = () => {
       const adminCount = statsData.roles?.admin || 0;
       const studentCount = statsData.roles?.student || 0;
       const lecturerCount = statsData.roles?.lecturer || 0;
-      const departmentCount =
-        statsData.departments?.length || departments.length || 5;
+
+      // FIXED: Use actual departments array length
+      const departmentCount = departments.length;
       const totalUsers = adminCount + studentCount + lecturerCount;
 
       console.log("Stats from API:", statsData);
+      console.log("Departments count:", departmentCount);
 
       setStats({
         totalAdmins: adminCount,
@@ -302,7 +306,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // Calculate statistics from users array (fallback method)
+  // FIXED: Calculate statistics from users array with proper department count
   const calculateStatsFromUsers = () => {
     if (users.length === 0) return;
 
@@ -311,11 +315,12 @@ const AdminDashboard = () => {
     const lecturerCount = users.filter(
       (user) => user.role === "lecturer"
     ).length;
-    const uniqueDepartments = [
-      ...new Set(users.map((user) => user.department).filter((dept) => dept)),
-    ];
-    const departmentCount = departments.length || uniqueDepartments.length || 5;
+
+    // FIXED: Use actual departments array length
+    const departmentCount = departments.length;
     const totalUsers = adminCount + studentCount + lecturerCount;
+
+    console.log("Calculated stats - Departments count:", departmentCount);
 
     setStats({
       totalAdmins: adminCount,
@@ -331,7 +336,6 @@ const AdminDashboard = () => {
     const initializeData = async () => {
       try {
         await Promise.all([fetchUsers(), fetchDepartments(), fetchNews()]);
-        await fetchStats();
       } catch (err) {
         console.error("Failed to initialize data:", err);
       }
@@ -340,18 +344,24 @@ const AdminDashboard = () => {
     initializeData();
   }, []);
 
+  // FIXED: Update stats when departments or users change
+  useEffect(() => {
+    if (departments.length > 0 && users.length > 0) {
+      fetchStats();
+    }
+  }, [departments, users]);
+
   // Fetch courses after users are loaded
   useEffect(() => {
     if (users.length > 0) {
       fetchCourses();
-      calculateStatsFromUsers();
     }
   }, [users, departments]);
 
-  // Get unique departments from users and departments
-  const userDepartments = [
-    ...new Set(users.map((user) => user.department).filter((dept) => dept)),
-  ];
+  // FIXED: Get departments from departments array for dropdown
+  const userDepartments = departments
+    .map((dept) => dept.departmentId)
+    .filter((dept) => dept);
 
   // Get course departments from departments data
   const courseDepartments = [
@@ -756,7 +766,7 @@ const AdminDashboard = () => {
                       </div>
                     </div>
 
-                    {/* Department Filter Dropdown */}
+                    {/* FIXED: Department Filter Dropdown */}
                     <div className="filter-dropdown">
                       <button
                         className={`dropdown-toggle ${
